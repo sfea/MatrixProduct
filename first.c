@@ -37,17 +37,8 @@ int main(int argc, char** argv)
 
         printf("\n");
 
-        if (write(fd, &n, sizeof(int)) != sizeof(int))
-        {
-                perror("write");
-                exit(1);
-        }
-        
+        new_write(fd, &n);
         // AP: воспользоваться своей библиотекой как и в second.c
-        if (write(fd, matr, 2*n*n*sizeof(int)) != 2*n*n*sizeof(int))
-        {
-                perror("write");
-                exit(1);
-        }
+        new_write(fd, matr);
 }
 
