@@ -1,4 +1,3 @@
-                                                                                                      
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -27,7 +26,7 @@ int main(int argc, char** argv)
 
         for(i = 0; i < 2*n*n; i++)
         {
-                matr[i] = rand() % 100;
+                matr[i] = 1;
                 if (i % n == 0 && i != 0)
                         printf("\n");
                 if (i == n*n)
@@ -37,8 +36,7 @@ int main(int argc, char** argv)
 
         printf("\n");
 
-        new_write(fd, &n);
-        // AP: воспользоваться своей библиотекой как и в second.c
-        new_write(fd, matr);
-}
+        new_write(fd, &n, sizeof(int));
 
+        new_write(fd, matr, 2*n*n*sizeof(int));
+}
