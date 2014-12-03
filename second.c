@@ -67,16 +67,16 @@ int main(int argc, char** argv)
                 exit(1);
         }
 
-	new_read(fd_op_1, &n);
+	new_read(fd_op_1, &n, sizeof(int));
 
         data_1 = (int*)calloc(n*n, sizeof(int));
         data_2 = (int*)calloc(n*n, sizeof(int));
         res = (int*)calloc(n*n, sizeof(int));
         fin = (int*)calloc(m, sizeof(int));
 	// AP: везде где вы используете потоковые чтение и запись надо пользоваться функциями своей библиотеки пбферизованного чтения записи
-	new_read(fd_op_1, data_1);
+	new_read(fd_op_1, data_1, n*n*sizeof(int));
 
-	new_read(fd_op_1, data_2);
+	new_read(fd_op_1, data_2, n*n*sizeof(int));
 
 	if (m < n*n)
 	{
