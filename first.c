@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <string.h>
 
-#define FILE_1 "./file.txt"
+#define FILE_1 "./file.txt" //файл, куда записываются матрицы
 
 int main(int argc, char** argv)
 {
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 
         for(i = 0; i < 2*n*n; i++)
         {
-                matr[i] = 1;
+                matr[i] = rand()%100;
                 if (i % n == 0 && i != 0)
                         printf("\n");
                 if (i == n*n)
@@ -40,3 +40,6 @@ int main(int argc, char** argv)
 
         new_write(fd, matr, 2*n*n*sizeof(int));
 }
+
+
+
