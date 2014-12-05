@@ -1,9 +1,10 @@
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
 
-int* new_read(int old_fd, int* buf, int numb)
+int* new_read(int old_fd, void* buf, int numb)
 {
         int re = 1;
         int i = 1;
@@ -21,7 +22,7 @@ int* new_read(int old_fd, int* buf, int numb)
         }
 }
 
-void new_write(int new_fd, int* buf, int numb)
+void new_write(int new_fd, void* buf, int numb)
 {
         int c = 0, i = 0;
         int wr;
@@ -32,11 +33,7 @@ void new_write(int new_fd, int* buf, int numb)
                 if (wr >= 0)
                         c += wr;
                 if (numb == c)
-                {
-                        printf("Запись прошла успешно!\n");
                         break;
-                }
-
                 if (wr < 0)
                 {
                         perror("write");
