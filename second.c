@@ -7,8 +7,8 @@
 #include <string.h>
 #include <pthread.h>
 
-#define FILE_1 "./file.txt"
-#define FILE_2 "./result.txt"
+#define FILE_1 "./file.txt" //файл, в котором записаны матрицы
+#define FILE_2 "./result.txt" //файл, в который запишется матрица произведения
 
 int* data_1 = 0;
 int* data_2 = 0;
@@ -18,9 +18,9 @@ int i = 0;
 
 struct thread_info
 {
-	pthread_t id;
-	int first_pos;
-	int length;
+        pthread_t id;
+        int first_pos;
+        int length;
 };
 
 void* thread_func(void* arg)
@@ -45,87 +45,94 @@ void* thread_func(void* arg)
 
 int main(int argc, char** argv)
 {
-	int m = strtol(argv[1], NULL, 10);
-	int* fin = 0;
-	int* res = 0;
-	int fd_op_1 = 0, fd_op_2 = 0;;
-	struct thread_info* thr = (struct thread_info*)calloc(m, sizeof(struct thread_info));
-	int eff_thr_numb = 0;
-	int fd_wr = 0;
-	struct timeval* mytime = (struct timeval*)calloc(2, sizeof(struct timeval));
-	gettimeofday(mytime, NULL);
+        int m = strtol(argv[1], NULL, 10);
+        int* fin = 0;
+        int* res = 0;
+        long int time = 0;
+        int fd_op_1 = 0, fd_op_2 = 0;;
+        struct thread_info* thr = (struct thread_info*)calloc(m, sizeof(struct thread_info));
+        int eff_thr_numb = 0;
+        int fd_wr = 0;
+        struct timeval* mytime = (struct timeval*)calloc(2, sizeof(struct timeval));
+        gettimeofday(mytime, NULL);
 
-	if ((fd_op_1 = open(FILE_1, O_RDONLY, 0666)) < 0)
-	{
-		perror("open_1");
-		exit(1);
-	}
+        if ((fd_op_1 = open(FILE_1, O_RDONLY, 0666)) < 0)
+        {
+                perror("open_1");
+                exit(1);
+        }
 
-	if ((fd_op_2 = open(FILE_2, O_CREAT|O_RDWR, 0666)) < 0)
+        if ((fd_op_2 = open(FILE_2, O_CREAT|O_RDWR, 0666)) < 0)
         {
                 perror("open_2");
                 exit(1);
         }
 
-	new_read(fd_op_1, &n, sizeof(int));
+
+        new_read(fd_op_1, &n, sizeof(int));
 
         data_1 = (int*)calloc(n*n, sizeof(int));
         data_2 = (int*)calloc(n*n, sizeof(int));
         res = (int*)calloc(n*n, sizeof(int));
         fin = (int*)calloc(m, sizeof(int));
-	// AP: везде где вы используете потоковые чтение и запись надо пользоваться функциями своей библиотеки пбферизованного чтения записи
-	new_read(fd_op_1, data_1, n*n*sizeof(int));
+        // AP: везде где вы используете потоковые чтение и запись надо пользоваться функциями своей библиотеки пбферизованного чтения записи
+        new_read(fd_op_1, data_1, n*n*sizeof(int));
 
 	new_read(fd_op_1, data_2, n*n*sizeof(int));
 
-	if (m < n*n)
-	{
-		eff_thr_numb = n*n / m;
-		for (i = 0; i < m; i++)
-		{
-			thr[i].length = eff_thr_numb;
-			thr[i].first_pos = i*eff_thr_numb;
-		}
+        if (m < n*n)
+        {
+                eff_thr_numb = n*n / m;
+                for (i = 0; i < m; i++)
+                {
+                        thr[i].length = eff_thr_numb;
+                        thr[i].first_pos = i*eff_thr_numb;
+                }
 
-		if (n*n % m != 0)
-			thr[m - 1].length += n*n % m;
-	}
+                if (n*n % m != 0)
+                        thr[m - 1].length += n*n % m;
+        }
 
-	else
-	{
-		m = n*n;
-		for (i = 0; i < m; i++)
-		{
-			thr[i].length = 1;
-			thr[i].first_pos = i;
-		}
-	}
+        else
+        {
+                m = n*n;
+                for (i = 0; i < m; i++)
+                {
+                        thr[i].length = 1;
+                        thr[i].first_pos = i;
+                }
+        }
 
-	for (i = 0; i < m; i++)
+        for (i = 0; i < m; i++)
+                pthread_create(&thr[i].id, NULL, thread_func, &thr[i]);
 
-		pthread_create(&thr[i].id, NULL, thread_func, &thr[i]);
-
-	for (i = 0; i < m; i++)
+        for (i = 0; i < m; i++)
         {
                 pthread_join(thr[i].id, (void**)&fin);
                 memcpy(res, fin, thr[i].length*sizeof(int));
                 res += thr[i].length;
         }
-        
+
         for (i = 0; i < m; i++)
-                res -= thr[i].length;	//Возвращение указателя в прежнее место
-		
-	dup2(fd_op_2, STDOUT_FILENO);
-	printf("\nМатрица произведения:\n");
-	for (i = 0; i < n*n; i++)
-	{
-		if (i % n == 0)
-		printf("\n");
-		printf("%d ", res[i]);
-	}
-	printf("\n");
-	gettimeofday(mytime + 1, NULL);
-	printf("working time = %ldmc\n", mytime[1].tv_usec - mytime[0].tv_usec +
-		1000000 * (mytime[1].tv_sec - mytime[0].tv_sec));
-	close(fd_op_2);
+                res -= thr[i].length;   //Возвращение указателя в прежнее место
+
+        new_write(fd_op_2, "Матрица произведения:", 40*sizeof(char));
+        new_write(fd_op_2, "\n", sizeof(char));
+        for (i = 0; i < n*n; i++)
+        {
+                char* ch = (char*)calloc(1, sizeof(char));
+                sprintf(ch, "%d", res[i]);
+                if (i % n == 0 && i != 0)
+                        new_write(fd_op_2, "\n", sizeof(char));
+                new_write(fd_op_2, ch, strlen(ch));
+                new_write(fd_op_2, " ", sizeof(char));
+                free(ch);
+        }
+        gettimeofday(mytime + 1, NULL);
+        time = mytime[1].tv_usec - mytime[0].tv_usec + 1000000 * (mytime[1].tv_sec - mytime[0].tv_sec);
+        char* ch = (char*)calloc(1, sizeof(char));
+	sprintf(ch, "\nworking time = %ldmc\n", time);
+        new_write(fd_op_2, ch, strlen(ch));
+        close(fd_op_2);
+        free(ch);
 }
