@@ -12,6 +12,7 @@
 
 int* data_1 = 0;
 int* data_2 = 0;
+// AP: сделайте так, чтобы результат не был разделяемой переменной, а был доступен только в одном главном потоке, котоырй собирает результат
 int* res = 0;
 int n = 0;
 int i = 0;
@@ -75,7 +76,7 @@ int main(int argc, char** argv)
         data_1 = (int*)calloc(n*n, sizeof(int));
         data_2 = (int*)calloc(n*n, sizeof(int));
         res = (int*)calloc(n*n, sizeof(int));
-
+	// AP: везде где вы используете потоковые чтение и запись надо пользоваться функциями своей библиотеки пбферизованного чтения записи
 	if ((fd_rd = read(fd_op_1, data_1, n*n*sizeof(int))) != n*n*sizeof(int))
 	{
 		perror("read_2");
